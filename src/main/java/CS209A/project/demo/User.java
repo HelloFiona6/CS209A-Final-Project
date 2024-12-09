@@ -5,6 +5,7 @@ public class User {
     private int userId;
     private int accountId;
     private int reputation;
+    private int acceptRate;
     private String userType;
     private String profileImage;
     private String displayName;
@@ -20,6 +21,10 @@ public class User {
 
     public int getReputation() {
         return reputation;
+    }
+
+    public int getAcceptRate() {
+        return acceptRate;
     }
 
     public String getUserType() {
@@ -64,5 +69,9 @@ public class User {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public void setAcceptRate(int acceptRate) {
+        this.acceptRate = acceptRate;
     }
 }
