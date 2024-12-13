@@ -1,6 +1,6 @@
 package com.example.mvcdemo;
 
-import com.example.mvcdemo.model.Tag;
+import com.example.mvcdemo.model.Tags;
 import com.example.mvcdemo.repository.TagRepository;
 import com.example.mvcdemo.service.TagsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +41,7 @@ public class TagsServiceTest {
         when(mockTagRepository.findTagsWithQuestionCount(PageRequest.of(0, 10))).thenReturn(mockResults);
 
         // 调用getTagsWithQuestionCount方法
-        List<Object[]> tags = dataService.getTagsWithQuestionCount();
+        List<Object[]> tags = dataService.getTagsWithQuestionCount(10);
 
         // 验证结果是否符合预期
         assertNotNull(tags);

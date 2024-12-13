@@ -15,7 +15,7 @@ public class Questions {
     @Column(name = "body", columnDefinition = "TEXT")
     private String body;
     @Column( nullable = true)
-    private int owner_user_id;
+    private Integer owner_user_id;
     private int comment_count;//有用到计算参与度
     private boolean is_answered;
     private int view_count;
@@ -97,6 +97,8 @@ public class Questions {
         return link;
     }
 
+    public Set<Tags> getTags() {return tags;}
+
     public void setLink(String link) {
         this.link = link;
     }
@@ -154,4 +156,6 @@ public class Questions {
     public void setQuestion_id(int question_id) {
         this.question_id = question_id;
     }
+
+    public void setTags(Set<Tags> tags) {this.tags = tags;}
 }

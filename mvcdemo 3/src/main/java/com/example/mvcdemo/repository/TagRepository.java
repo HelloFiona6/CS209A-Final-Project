@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface TagRepository extends JpaRepository<Tags, Integer> {
     @Query("SELECT t.name, COUNT(q) FROM Tags t " +
-            "JOIN t.questions q GROUP BY t ORDER BY COUNT(q) DESC "
+            "JOIN t.questions q GROUP BY t ORDER BY COUNT(q) DESC  "
             )
     List<Object[]> findTagsWithQuestionCount(PageRequest pageRequest);
 }

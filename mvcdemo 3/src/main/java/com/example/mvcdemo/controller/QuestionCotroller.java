@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class QuestionCotroller {
@@ -18,5 +19,10 @@ public class QuestionCotroller {
     @GetMapping("/top10engagement")
     public List<Object[]> getTagsWithEngagementCount() {
         return questionService.getTagsWithEngagementCount();
+    }
+
+    @GetMapping("/error-words")
+    public Map<String, Integer> getErrorWordCounts() {
+        return questionService.getErrorWordCounts();
     }
 }

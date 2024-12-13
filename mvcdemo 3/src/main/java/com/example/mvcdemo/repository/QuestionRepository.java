@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface QuestionRepository extends JpaRepository<Questions, Long> {
     // 计算每个标签的参与度总和，并返回前十个参与度最高的标签
-    @Query("SELECT tag.name,SUM(q.comment_count + q.down_vote_count + q.up_vote_count+q.answer_count) " +
+    @Query("SELECT tag.name,q.comment_count,q.down_vote_count,q.up_vote_count,q.answer_count,SUM(q.comment_count + q.down_vote_count + q.up_vote_count+q.answer_count) " +
             "FROM Questions q " +
             "JOIN q.tags AS tag " +
             "GROUP BY tag " +

@@ -1,17 +1,188 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Spring Boot Demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackOverflow Java Question Analysis</title>
+
+    <!-- 引入 jQuery 库 (用于 AJAX 请求) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- 引入 echarts 和 echarts-wordcloud 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2/dist/echarts-wordcloud.min.js"></script>
+
+    <style>
+        #word-cloud {
+            width: 100%;
+            height: 500px;
+            margin: 0 auto;
+        }
+
+        #bar-chart {
+            width: 100%;
+            height: 500px;
+            margin: 0 auto;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            height: 60vh;
+        }
+
+        .chart-container > div {
+            width: 48%;
+            height: 100%;
+        }
+
+        .input-container {
+            margin-top: 20px;
+        }
+
+        .input-container input {
+            width: 60px;
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        .input-container button {
+            padding: 5px 10px;
+        }
+    </style>
 </head>
-<body>
-<h1>Student List</h1>
-<table>
-    <tr th:each="student: ${students}">
-        <td th:text="${student.id}">ID</td>
-        <td th:text="${student.name}">Name</td>
-        <td th:text="${student.email}">Email</td>
-    </tr>
-</table>
+<body style="text-align: center">
+<h1>StackOverflow Java Question Analysis</h1>
+
+<div class="chart-container">
+    <div id="word-cloud"></div>
+    <div id="bar-chart"></div>
+</div>
+
+<!-- 输入框和按钮 -->
+<div class="input-container">
+    <input type="number" id="num-tags" value="20" min="1">
+    <button id="update-charts">更新图表</button>
+    <button id="query-json">查询</button>
+</div>
+
+<script>
+    // 获取指定数量的标签数据并更新图表
+    function updateCharts(numTags) {
+        $.ajax({
+            url: `/toptags?num=${numTags}`,
+            method: 'GET',
+            success: function (data) {
+                var words = data.map(function (item) {
+                    return {name: item[0], value: item[1]};
+                });
+
+                // 更新词云图
+                var wordCloudChart = echarts.init(document.getElementById('word-cloud'));
+                var wordCloudOption = {
+                    title: {
+                        text: 'Top ' + numTags + ' Tags',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                            color: '#4cc9f0'
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {},
+                    series: [{
+                        type: 'wordCloud',
+                        sizeRange: [10, 60],
+                        rotationRange: [-30, 30],
+                        shape: 'circle',
+                        gridSize: 1,
+                        layoutAnimation: true,
+                        drawOutOfBound: true,
+                        data: words,
+                        textStyle: {
+                            color: function () {
+                                let colors = ['#8d4714', '#efba13', '#0c5e25', '#8e122c', '#0d5271'];
+                                return colors[parseInt(Math.random() * colors.length)];
+                            }
+                        },
+                        emphasis: {
+                            textStyle: {
+                                shadowBlur: 15,
+                                shadowColor: '#333'
+                            }
+                        }
+                    }]
+                };
+                wordCloudChart.setOption(wordCloudOption);
+
+                // 更新柱状图
+                var tags = data.map(function (item) {
+                    return item[0];
+                });
+                var frequencies = data.map(function (item) {
+                    return item[1];
+                });
+
+                var barChart = echarts.init(document.getElementById('bar-chart'));
+                var barOption = {
+                    title: {
+                        text: 'Tag Frequency',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                            color: '#4cc9f0'
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {},
+                    xAxis: {
+                        type: 'category',
+                        data: tags,
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: frequencies,
+                        type: 'bar',
+                        itemStyle: {
+                            normal: {
+                                color: function (params) {
+                                    var colors = ['#FF7F27', '#FFC90E', '#28D15A', '#0BBDFC', '#8365FA'];
+                                    return colors[params.dataIndex % colors.length];
+                                }
+                            }
+                        }
+                    }]
+                };
+                barChart.setOption(barOption);
+            },
+            error: function (error) {
+                console.error('Error fetching data', error);
+            }
+        });
+    }
+
+    // 点击更新图表按钮时
+    $('#update-charts').click(function () {
+        var numTags = $('#num-tags').val();
+        updateCharts(numTags);
+    });
+
+    // 点击查询按钮时跳转到另一个页面并显示JSON数据
+    $('#query-json').click(function () {
+        var numTags = $('#num-tags').val();
+        window.location.href = '/tagsjson?num=' + numTags;
+    });
+
+    // 页面加载时，默认查询20个标签
+    $(document).ready(function () {
+        updateCharts(20);
+    });
+</script>
 </body>
 </html>
