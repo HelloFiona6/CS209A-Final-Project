@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>TOP 10 Engagement</title>
+</head>
+<body>
+<h1>Tags List</h1>
+<table>
+<tr th:each="Tags: ${tags}">
+  <td th:text="${tags.name}">Name</td>
+  <td th:text="${student.email}">Email</td>
+</tr>
+</table>
+</body>
+</html>
