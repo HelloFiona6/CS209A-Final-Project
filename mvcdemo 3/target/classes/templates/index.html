@@ -1004,12 +1004,12 @@
     });
 
     $('#query-tagsjson').click(function () {
-        var numTags = $('#tag-N').val();
+        var num = $('#tag-N').val();
         if (isNaN(num) || num <= 0) {
             alert("Please enter a valid positive number.");
             return;
         }
-        window.location.href = '/tagsjson?num=' + numTags;
+        window.location.href = '/tagsjson?num=' + num;
     });
 
     // Handle Error Query (Error Frequency)
