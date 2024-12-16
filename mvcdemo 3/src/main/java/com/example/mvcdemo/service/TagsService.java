@@ -18,7 +18,7 @@ public class TagsService {
     }
 
     public List<Object[]> getTagsWithQuestionCount(int n) {
-        List<Object[]> results = tagRepository.findTagsWithQuestionCount(PageRequest.of(0, n));
+        List<Object[]> results = tagRepository.findTagsWithQuestionCount(PageRequest.of(0, n+1));
         // 创建一个新的列表来存储除了第一位之外的所有元素
         List<Object[]> newResults = new ArrayList<>();
 
@@ -29,6 +29,18 @@ public class TagsService {
         }
 
         return newResults;
+    }
+    public List<Object[]> getTagCountByTagName(String tagName) {
+        int questionCount = tagRepository.countQuestionsByTagName(tagName);
+
+        // 创建一个列表来存储结果
+        List<Object[]> results = new ArrayList<>();
+
+        // 创建一个SimpleEntry对象来存储标签名和计数，然后添加到结果列表中
+        results.add(new Object[]{tagName, questionCount});
+
+        // 返回包含标签名和计数的列表
+        return results;
     }
 }
 

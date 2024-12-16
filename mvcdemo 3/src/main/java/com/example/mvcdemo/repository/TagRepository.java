@@ -12,4 +12,7 @@ public interface TagRepository extends JpaRepository<Tags, Integer> {
             "JOIN t.questions q GROUP BY t ORDER BY COUNT(q) DESC  "
             )
     List<Object[]> findTagsWithQuestionCount(PageRequest pageRequest);
+
+    @Query("SELECT COUNT(q) FROM Questions q JOIN q.tags t WHERE t.name = ?1")
+    int countQuestionsByTagName(String tagName);
 }

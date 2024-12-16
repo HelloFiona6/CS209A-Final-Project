@@ -29,4 +29,9 @@ public class TagsRestController {
     public List<Object[]> getTagsJson(@RequestParam(defaultValue = "20") int num) {
         return tagsService.getTagsWithQuestionCount(num);
     }
+    // todo
+    @GetMapping("/tag-count")
+    public List<Object[]> getTagCount(@RequestParam String name) {
+        return tagsService.getTagCountByTagName(name);
+    }
 }

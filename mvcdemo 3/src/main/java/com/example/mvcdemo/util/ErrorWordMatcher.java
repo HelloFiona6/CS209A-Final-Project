@@ -8,7 +8,7 @@ public class ErrorWordMatcher {
     private static final Pattern pattern = Pattern.compile(
             "\\b(\\w+(error|exception)\\w*)\\b", Pattern.CASE_INSENSITIVE);
 
-    public static Map<String, Integer> countErrorWords(String text) {
+    public static Map<String, Integer> countErrorWords(String text,int num) {
         Map<String, Integer> errorCounter = new HashMap<>();
         Matcher matcher = pattern.matcher(text);
 
@@ -24,11 +24,24 @@ public class ErrorWordMatcher {
         // 将排序后的条目放回LinkedHashMap以保持顺序
 
         Map<String, Integer> sortedErrorCounter = new LinkedHashMap<>();
-        for (int i = 0; i < Math.min(20, entryList.size()); i++) {
+        for (int i = 0; i < Math.min(num,entryList.size()); i++) {
             sortedErrorCounter.put(entryList.get(i).getKey(), entryList.get(i).getValue());
         }
 
         // sortedErrorCounter.forEach((word, count) -> System.out.println(word + ": " + count));
         return sortedErrorCounter;
+    }
+    public static int countSpecificErrorWords(String text, String specificError) {
+        Map<String, Integer> errorCounter = new HashMap<>();
+        Matcher matcher = pattern.matcher(text);
+
+        while (matcher.find()) {
+            String match = matcher.group(1);
+            if (match.contains(specificError)) {
+                errorCounter.put(match, errorCounter.getOrDefault(match, 0) + 1);
+            }
+        }
+
+        return errorCounter.getOrDefault(specificError, 0);
     }
 }

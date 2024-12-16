@@ -13,13 +13,13 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2/dist/echarts-wordcloud.min.js"></script>
 
     <style>
-        #word-cloud {
+        #word-cloud, #word-cloud3 {
             width: 100%;
             height: 500px;
             margin: 0 auto;
         }
 
-        #bar-chart {
+        #bar-chart, #pie-chart, #bar-chart2 {
             width: 100%;
             height: 500px;
             margin: 0 auto;
@@ -35,16 +35,19 @@
         .chart-container > div {
             width: 48%;
             height: 100%;
+
         }
 
         .input-container {
-            margin-top: 20px;
+            margin-top: 40px;
+            margin-bottom: 80px;
         }
 
         .input-container input {
             width: 60px;
             padding: 5px;
             margin-right: 10px;
+            margin-bottom: 20px;
         }
 
         .input-container button {
@@ -60,16 +63,94 @@
     <div id="bar-chart"></div>
 </div>
 
-<!-- 输入框和按钮 -->
+<!-- 输入框和按钮 (用于控制更新第一个图表) -->
 <div class="input-container">
-    <input type="number" id="num-tags" value="20" min="1">
-    <button id="update-charts">更新图表</button>
-    <button id="query-json">查询</button>
+    <input type="number" id="num-tags1" value="20" min="1">
+    <button id="update-charts1">更新</button>
+    <button id="query-json1">查询</button>
+</div>
+
+<div class="chart-container">
+    <div id="bar-chart2"></div>
+    <div id="pie-chart"></div>
+</div>
+
+<!-- 输入框和按钮 (用于控制更新第二个图表) -->
+<div class="input-container">
+    <input type="number" id="num-tags2" value="20" min="1">
+    <button id="update-charts2">更新</button>
+    <button id="query-json2">查询</button>
+</div>
+
+<div class="chart-container">
+    <div id="word-cloud3"></div>
+    <div id="bar-chart3"></div>
+</div>
+
+<!-- 输入框和按钮 (用于控制更新第一个图表) -->
+<div class="input-container">
+    <input type="number" id="num3" value="20" min="1">
+    <button id="update-charts3">更新</button>
+    <button id="query-json3">查询</button>
+</div>
+
+<div class="chart-container">
+    <div id="line-chart1" style="width: 100%; height: 500px; margin: 0 auto;"></div>
+    <div id="scatter-chart1" style="width: 100%; height: 500px; margin: 0 auto;"></div>
+</div>
+
+<!-- 输入框和按钮 (用于控制更新第四个图表) -->
+<div class="input-container">
+    <input type="number" id="num4" value="60" min="1">
+    <button id="update-charts4">更新</button>
+    <button id="query-json4">查询</button>
+</div>
+
+<div class="chart-container">
+    <div id="line-chart5" style="width: 100%; height: 400px;"></div>
+    <div id="scatter-chart5" style="width: 100%; height: 400px;"></div>
+</div>
+
+<div class="input-container">
+    <input type="number" id="num5" value="60" min="1">
+    <button id="update-charts5">更新</button>
+    <button id="query-json5">查询</button>
+</div>
+
+<div class="chart-container">
+    <div id="line-chart6" style="width: 100%; height: 400px;"></div>
+    <div id="scatter-chart6" style="width: 100%; height: 400px;"></div>
+</div>
+
+<div class="input-container">
+    <input type="number" id="num6" value="60" min="1">
+    <button id="update-charts6">更新</button>
+    <button id="query-json6">查询</button>
+</div>
+
+<!-- Custom Query Section -->
+<h2>Custom Query</h2>
+<p>Get the data you need by inputting the required query parameters.</p>
+
+<!-- Tag Query Section -->
+<h3>Topic Frequency Query</h3>
+<div class="input-container">
+    <input type="text" id="tag-name" placeholder="Enter topic name">
+    <button id="query-tag-count">Query Topic Count</button>
+    <button id="query-tagsjson">Query Top N Topics</button>
+</div>
+
+<!-- Error Query Section -->
+<h3>Error Frequency Query</h3>
+<div class="input-container">
+    <input type="text" id="error-word" placeholder="Enter error/exception word">
+    <button id="query-error-word">Query Error Count</button>
+    <button id="query-error-words">Query Top N Errors</button>
 </div>
 
 <script>
     // 获取指定数量的标签数据并更新图表
-    function updateCharts(numTags) {
+    function updateCharts1(numTags) {
         $.ajax({
             url: `/toptags?num=${numTags}`,
             method: 'GET',
@@ -131,7 +212,6 @@
                         textStyle: {
                             fontSize: 20,
                             fontWeight: 'oblique',
-                            color: '#4cc9f0'
                         },
                         left: 'center'
                     },
@@ -167,21 +247,727 @@
         });
     }
 
+    function updateCharts2(numTags) {
+        $.ajax({
+            url: `/topengagement?n=${numTags}`,
+            method: 'GET',
+            success: function (data) {
+                var tags = data.map(function (item) {
+                    return item[0];
+                });
+                var commentCounts = data.map(function (item) {
+                    return item[1];
+                });
+                var downVoteCounts = data.map(function (item) {
+                    return item[2];
+                });
+                var upVoteCounts = data.map(function (item) {
+                    return item[3];
+                });
+                var answerCounts = data.map(function (item) {
+                    return item[4];
+                });
+                var sum = data.map(function (item) {
+                    return item[5];
+                });
+                var scalingFactor = 10;  // 设置一个缩放因子
+                var scaledCommentCounts = commentCounts.map(value => value * scalingFactor);
+                var scaledAnswerCounts = answerCounts.map(value => value * scalingFactor);
+
+                // 更新堆叠柱状图
+                var barChart = echarts.init(document.getElementById('bar-chart2'));
+                var barOption = {
+                    title: {
+                        text: 'Tag Engagement Stack',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center',
+                        top: '5%'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        },
+                        formatter: function (params) {
+                            var tooltipText = '';
+                            params.forEach(function (item) {
+                                if (item.seriesIndex === 0 || item.seriesIndex === 1) {
+                                    // 显示未经缩放的投票数据
+                                    tooltipText += item.seriesName + ': ' + item.value + '<br>';
+                                } else {
+                                    // 显示原始评论和回答数据
+                                    var originalData = item.seriesIndex === 2 ? commentCounts[tags.indexOf(item.name)] : answerCounts[tags.indexOf(item.name)];
+                                    tooltipText += item.seriesName + ': ' + originalData;
+                                }
+                            });
+                            return tooltipText;
+                        }
+                    },
+                    legend: {
+                        data: ['Comment Count', 'Down Vote Count', 'Up Vote Count', 'Answer Count'],
+                        left: 'center'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: tags,
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: 'Engagement Count',
+                            min: 0,
+                            max: Math.max(...upVoteCounts.concat(downVoteCounts)) * 1.5
+                        },
+                        {
+                            type: 'value',
+                            name: 'Scaled Engagement Count',
+                            min: 0,
+                            max: Math.max(...upVoteCounts.concat(scaledAnswerCounts, scaledCommentCounts)) * 1.5,
+                            scale: true,  // 启用缩放
+                            axisLabel: {
+                                formatter: function (value) {
+                                    return value / scalingFactor;  // 显示缩放后的值
+                                }
+                            }
+                        }
+                    ],
+                    series: [
+                        {
+                            name: 'Up Vote Count',
+                            type: 'bar',
+                            stack: 'engagement',
+                            data: upVoteCounts,
+                            itemStyle: {color: '#31a853'},
+                            yAxisIndex: 0
+                        },
+                        {
+                            name: 'Down Vote Count',
+                            type: 'bar',
+                            stack: 'engagement',
+                            data: downVoteCounts,
+                            itemStyle: {color: '#e8c563'},
+                            yAxisIndex: 0
+                        },
+                        {
+                            name: 'Comment Count',
+                            type: 'bar',
+                            stack: 'engagement',
+                            data: scaledCommentCounts,
+                            itemStyle: {color: '#df915b'},
+                            yAxisIndex: 1
+                        },
+                        {
+                            name: 'Answer Count',
+                            type: 'bar',
+                            stack: 'engagement',
+                            data: scaledAnswerCounts,
+                            itemStyle: {color: '#41b0d6'},
+                            yAxisIndex: 1  // 使用第二个 Y 轴来展示较小的数据
+                        }
+                    ]
+                };
+                barChart.setOption(barOption);
+
+                // 更新饼图
+                var pieChart = echarts.init(document.getElementById('pie-chart'));
+                var pieOption = {
+                    title: {
+                        text: 'Engagement Type Distribution',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {},
+                    series: [
+                        {
+                            name: 'Engagement',
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '50%'],
+                            data: [
+                                {
+                                    value: commentCounts.reduce((a, b) => a + b, 0),
+                                    name: 'comment counts'
+                                },
+                                {
+                                    value: downVoteCounts.reduce((a, b) => a + b, 0),
+                                    name: 'down vote counts'
+                                },
+                                {
+                                    value: upVoteCounts.reduce((a, b) => a + b, 0),
+                                    name: 'up vote counts'
+                                },
+                                {
+                                    value: answerCounts.reduce((a, b) => a + b, 0),
+                                    name: 'answer counts'
+                                }
+                            ],
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowOffsetY: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                pieChart.setOption(pieOption);
+
+
+            },
+            error: function (error) {
+                console.error('Error fetching data', error);
+            }
+        });
+    }
+
+    function updateCharts3(num) {
+        $.ajax({
+            url: `/error-words?num=${num}`,
+            method: 'GET',
+            success: function (data) {
+
+                var words = Object.entries(data).map(function (item) {
+                    return {name: item[0], value: item[1]};
+                });
+
+                // 更新词云图
+                var wordCloudChart = echarts.init(document.getElementById('word-cloud3'));
+                var wordCloudOption = {
+                    title: {
+                        text: 'Top ' + num + ' errors and exception',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                            color: '#4cc9f0'
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {},
+                    series: [{
+                        type: 'wordCloud',
+                        sizeRange: [10, 40],
+                        rotationRange: [-30, 30],
+                        shape: 'circle',
+                        gridSize: 1,
+                        layoutAnimation: true,
+                        drawOutOfBound: true,
+                        data: words,
+                        textStyle: {
+                            color: function () {
+                                let colors = ['#8d4714', '#efba13', '#0c5e25', '#8e122c', '#0d5271'];
+                                return colors[parseInt(Math.random() * colors.length)];
+                            }
+                        },
+                        emphasis: {
+                            textStyle: {
+                                shadowBlur: 15,
+                                shadowColor: '#333'
+                            }
+                        }
+                    }]
+                };
+                wordCloudChart.setOption(wordCloudOption);
+
+                // 更新柱状图
+                var mistakes = words.map(function (item) {
+                    return item.name;
+                });
+                var frequencies = words.map(function (item) {
+                    return item.value;
+                });
+
+                var barChart = echarts.init(document.getElementById('bar-chart3'));
+                var barOption = {
+                    title: {
+                        text: 'Mistake Frequency',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {},
+                    xAxis: {
+                        type: 'category',
+                        data: mistakes,
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        data: frequencies,
+                        type: 'bar',
+                        itemStyle: {
+                            normal: {
+                                color: function (params) {
+                                    var colors = ['#FF7F27', '#FFC90E', '#28D15A', '#0BBDFC', '#8365FA'];
+                                    return colors[params.dataIndex % colors.length];
+                                }
+                            }
+                        }
+                    }]
+                };
+                barChart.setOption(barOption);
+            },
+            error: function (error) {
+                console.error('Error fetching data', error);
+            }
+        });
+    }
+
+    function updateCharts4(num) {
+        $.ajax({
+            url: `/answer-question-stats?num=${num}`,
+            method: 'GET',
+            success: function (data) {
+                console.log(data); // 查看返回的数据格式，确保数据正确
+
+                // 从返回数据中提取 x 轴和两个 y 轴的数据
+                var days = data.map(function (item) {
+                    return item["Elapsed time"];  // 这里使用 Days Between Answer and Question Creation 作为横轴
+                });
+                var upVoteCounts = data.map(function (item) {
+                    return item["Up Vote Count"];
+                });
+                var isAccepted = data.map(function (item) {
+                    return item["Is Answer Accepted"];
+                });
+
+                // 创建折线图配置
+                var lineChart = echarts.init(document.getElementById('line-chart1'));
+                var lineOption = {
+                    title: {
+                        text: 'Elapsed Time vs Up Vote Count',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: days,
+                        name: 'Elapsed Time (Days)',
+                        axisLabel: {
+                            rotate: 45,
+                            formatter: function (value, index) {
+                                return index % 5 === 0 ? value : ''; // 控制标签显示的密度
+                            }
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: 'Up Vote Count',
+                    },
+                    series: [
+                        {
+                            name: 'Up Vote Count',
+                            type: 'line',
+                            data: upVoteCounts,
+                            smooth: true,
+                            itemStyle: {
+                                color: '#FF7F27',
+                            }
+                        }
+                    ]
+                };
+                lineChart.setOption(lineOption);
+
+                // 创建散点图配置
+                var scatterChart = echarts.init(document.getElementById('scatter-chart1'));
+                var scatterOption = {
+                    title: {
+                        text: 'Elapsed Time vs Answer Acceptance',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: function (params) {
+                            return 'Elapsed Time: ' + params[0].value[0] + ' days<br/>Is Accepted: ' + (params[0].value[1] ? 'Yes' : 'No');
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: days,
+                        name: 'Elapsed Time (Days)',
+                        axisLabel: {
+                            rotate: 45,
+                            formatter: function (value, index) {
+                                return index % 5 === 0 ? value : ''; // 控制标签显示的密度
+                            }
+                        }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: ['Not Accepted', 'Accepted'],
+                        name: 'Answer Accepted',
+                    },
+                    series: [
+                        {
+                            name: 'Answer Acceptance',
+                            type: 'scatter',
+                            data: days.map(function (day, index) {
+                                return [day, isAccepted[index]];
+                            }),
+                            itemStyle: {
+                                color: function (params) {
+                                    return params.value[1] === 1 ? '#51cc77' : '#d15353'; // 根据接受与否设置颜色
+                                }
+                            }
+                        }
+                    ]
+                };
+                scatterChart.setOption(scatterOption);
+            },
+            error: function (error) {
+                console.error('Error fetching data', error);
+            }
+        });
+    }
+
+    function updateCharts5(num) {
+        $.ajax({
+            url: `/answer-reputation?num=${num}`,
+            method: 'GET',
+            success: function (data) {
+                console.log(data); // 查看返回的数据格式，确保数据正确
+
+                // 从返回数据中提取 x 轴和两个 y 轴的数据
+                var reputations = data.map(function (item) {
+                    return item["reputation"];
+                });
+                var upVoteCounts = data.map(function (item) {
+                    return item["upVoteCount"];
+                });
+                var isAccepted = data.map(function (item) {
+                    return item["isAccepted"] === true ? 1 : 0; // 转换为 1 (true) 和 0 (false)
+                });
+
+                // 创建折线图的配置（Up Vote Count vs Reputation）
+                var lineChart = echarts.init(document.getElementById('line-chart5'));
+                var lineOption = {
+                    title: {
+                        text: 'Up Vote Count vs Reputation',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: reputations,
+                        name: 'Reputation',
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: 'Up Vote Count',
+                    },
+                    series: [
+                        {
+                            name: 'Up Vote Count',
+                            type: 'line',
+                            data: upVoteCounts,
+                            smooth: true,
+                            itemStyle: {
+                                color: '#FF7F27',
+                            }
+                        }
+                    ]
+                };
+                lineChart.setOption(lineOption);
+
+                // 创建散点图的配置（Is Answer Accepted vs Reputation）
+                var scatterChart = echarts.init(document.getElementById('scatter-chart5'));
+                var scatterOption = {
+                    title: {
+                        text: 'Is Answer Accepted vs Reputation',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: reputations,
+                        name: 'Reputation',
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: [0, 1], // 0 = false, 1 = true
+                        name: 'Is Answer Accepted',
+                        axisLabel: {
+                            formatter: function (value) {
+                                return value === 1 ? 'True' : 'False';
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Is Answer Accepted',
+                            type: 'scatter',
+                            data: reputations.map(function (reputation, index) {
+                                return [reputation, isAccepted[index]]; // 每个点是 [reputation, isAccepted]
+                            }),
+                            itemStyle: {
+                                color: function (params) {
+                                    return params.data[1] === 1 ? '#28D15A' : '#FF7F27'; // 绿色为 true，橙色为 false
+                                }
+                            }
+                        }
+                    ]
+                };
+                scatterChart.setOption(scatterOption);
+            },
+            error: function (error) {
+                console.error('Error fetching data', error);
+            }
+        });
+    }
+
+    function updateCharts6(num) {
+        $.ajax({
+            url: `/answer-stats?num=${num}`,
+            method: 'GET',
+            success: function (data) {
+                console.log(data); // 查看返回的数据格式，确保数据正确
+
+                // 从返回数据中提取 x 轴和两个 y 轴的数据
+                var commentCount = data.map(function (item) {
+                    return item["commentCount"];
+                });
+                var upVoteCounts = data.map(function (item) {
+                    return item["upVoteCount"];
+                });
+                var isAccepted = data.map(function (item) {
+                    return item["isAccepted"] === true ? 1 : 0; // 转换为 1 (true) 和 0 (false)
+                });
+
+                // 创建折线图的配置（Up Vote Count vs Reputation）
+                var lineChart = echarts.init(document.getElementById('line-chart6'));
+                var lineOption = {
+                    title: {
+                        text: 'Up Vote Count vs Reputation',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: commentCount,
+                        name: 'comment count',
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: 'Up Vote Count',
+                    },
+                    series: [
+                        {
+                            name: 'Up Vote Count',
+                            type: 'line',
+                            data: upVoteCounts,
+                            smooth: true,
+                            itemStyle: {
+                                color: '#FF7F27',
+                            }
+                        }
+                    ]
+                };
+                lineChart.setOption(lineOption);
+
+                // 创建散点图的配置（Is Answer Accepted vs Reputation）
+                var scatterChart = echarts.init(document.getElementById('scatter-chart6'));
+                var scatterOption = {
+                    title: {
+                        text: 'Is Answer Accepted vs Reputation',
+                        textStyle: {
+                            fontSize: 20,
+                            fontWeight: 'oblique',
+                        },
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: commentCount,
+                        name: 'comment count',
+                        axisLabel: {
+                            rotate: 45
+                        }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: [0, 1], // 0 = false, 1 = true
+                        name: 'Is Answer Accepted',
+                        axisLabel: {
+                            formatter: function (value) {
+                                return value === 1 ? 'True' : 'False';
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Is Answer Accepted',
+                            type: 'scatter',
+                            data: commentCount.map(function (commentCount, index) {
+                                return [commentCount, isAccepted[index]];
+                            }),
+                            itemStyle: {
+                                color: function (params) {
+                                    return params.data[1] === 1 ? '#28D15A' : '#FF7F27';
+                                }
+                            }
+                        }
+                    ]
+                };
+                scatterChart.setOption(scatterOption);
+            },
+            error: function (error) {
+                console.error('Error fetching data', error);
+            }
+        });
+    }
+
+
     // 点击更新图表按钮时
-    $('#update-charts').click(function () {
-        var numTags = $('#num-tags').val();
-        updateCharts(numTags);
+    $('#update-charts1').click(function () {
+        var numTags = $('#num-tags1').val();
+        updateCharts1(numTags);
     });
 
     // 点击查询按钮时跳转到另一个页面并显示JSON数据
-    $('#query-json').click(function () {
-        var numTags = $('#num-tags').val();
+    $('#query-json1').click(function () {
+        var numTags = $('#num-tags1').val();
         window.location.href = '/tagsjson?num=' + numTags;
     });
 
-    // 页面加载时，默认查询20个标签
+    $('#update-charts2').click(function () {
+        var numTags = $('#num-tags2').val();
+        updateCharts2(numTags);
+    });
+    $('#query-json2').click(function () {
+        var numTags = $('#num-tags2').val();
+        window.location.href = '/topengagement?n=' + numTags;
+    });
+    $('#update-charts3').click(function () {
+        var numTags = $('#num3').val();
+        updateCharts3(numTags);
+    });
+
+    // 点击查询按钮时跳转到另一个页面并显示JSON数据
+    $('#query-json3').click(function () {
+        var num = $('#num3').val();
+        window.location.href = '/error-words?num=' + num;
+    });
+
+    $('#update-charts4').click(function () {
+        var num = $('#num4').val();
+        updateCharts4(num);
+    });
+    $('#query-json4').click(function () {
+        var num = $('#num4').val();
+        window.location.href = '/answer-question-stats?num=' + num;
+    });
+
+    $('#update-charts5').click(function () {
+        var num = $('#num5').val();
+        updateCharts5(num);
+    });
+    $('#query-json5').click(function () {
+        var num = $('#num5').val();
+        window.location.href = '/answer-reputation?num=' + num;
+    });
+
+    $('#update-charts6').click(function () {
+        var num = $('#num6').val();
+        updateCharts6(num);
+    });
+    $('#query-json6').click(function () {
+        var num = $('#num6').val();
+        window.location.href = '/answer-stats?num=' + num;
+    });
+    // Handle Tag Query (Topic Frequency)
+    $('#query-tag-count').click(function () {
+        var tagName = $('#tag-name').val();
+        if (tagName) {
+            window.location.href = '/tag-count?name=' + tagName;
+        } else {
+            alert("Please enter a topic name.");
+        }
+    });
+
+    $('#query-tagsjson').click(function () {
+        var numTags = $('#num-tags1').val();
+        window.location.href = '/tagsjson?num=' + numTags;
+    });
+
+    // Handle Error Query (Error Frequency)
+    $('#query-error-word').click(function () {
+        var errorWord = $('#error-word').val();
+        if (errorWord) {
+            window.location.href = '/error-word?word=' + errorWord;
+        } else {
+            alert("Please enter an error word.");
+        }
+    });
+
+    $('#query-error-words').click(function () {
+        var num = $('#num-tags1').val();
+        window.location.href = '/error-words?num=' + num;
+    });
+
+
     $(document).ready(function () {
-        updateCharts(20);
+        updateCharts1(20);
+        updateCharts2(20);
+        updateCharts3(20);
+        updateCharts4(60);
+        updateCharts5(60);
+        updateCharts6(60);
     });
 </script>
 </body>
