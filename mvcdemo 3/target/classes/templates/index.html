@@ -11,9 +11,10 @@
     <!-- 引入 echarts 和 echarts-wordcloud 库 -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2/dist/echarts-wordcloud.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        #word-cloud, #word-cloud3 {
+        #word-cloud {
             width: 100%;
             height: 500px;
             margin: 0 auto;
@@ -29,7 +30,7 @@
             display: flex;
             justify-content: space-between;
             width: 100%;
-            height: 60vh;
+            height: 80vh;
         }
 
         .chart-container > div {
@@ -39,12 +40,12 @@
         }
 
         .input-container {
-            margin-top: 40px;
+            margin-top: 20px;
             margin-bottom: 80px;
         }
 
         .input-container input {
-            width: 60px;
+            width: 120px;
             padding: 5px;
             margin-right: 10px;
             margin-bottom: 20px;
@@ -57,6 +58,17 @@
 </head>
 <body style="text-align: center">
 <h1>StackOverflow Java Question Analysis</h1>
+
+<div style="background-color: #f4f4f4; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #ccc; font-family: Arial, sans-serif;">
+    <h3>Data Source</h3>
+    <p>This website collects data from Stack Overflow, consisting of the following:</p>
+    <ul>
+        <li><strong>1,600 questions</strong></li>
+        <li><strong>3,766 answers</strong></li>
+        <li><strong>4,534 users</strong></li>
+        <li><strong>1,445 tags</strong></li>
+    </ul>
+</div>
 
 <div class="chart-container">
     <div id="word-cloud"></div>
@@ -75,6 +87,9 @@
     <div id="pie-chart"></div>
 </div>
 
+<p>* The data only includes questions submitted by users with a reputation greater than 900.</p>
+<p>* The bar chart of comment count and answer count has been scaled, with a scaling factor of 20.</p>
+
 <!-- 输入框和按钮 (用于控制更新第二个图表) -->
 <div class="input-container">
     <input type="number" id="num-tags2" value="20" min="1">
@@ -83,8 +98,8 @@
 </div>
 
 <div class="chart-container">
-    <div id="word-cloud3"></div>
-    <div id="bar-chart3"></div>
+    <div id="word-cloud3" style="width: 50%; height: 500px; float: left;"></div>
+    <div id="bar-chart3" style="width: 50%; height: 500px; float: left;"></div>
 </div>
 
 <!-- 输入框和按钮 (用于控制更新第一个图表) -->
@@ -99,20 +114,27 @@
     <div id="scatter-chart1" style="width: 100%; height: 500px; margin: 0 auto;"></div>
 </div>
 
+<p>The relationship between elapsed time on each answer and the number of up-votes, or whether the answer was accepted.</p>
+
 <!-- 输入框和按钮 (用于控制更新第四个图表) -->
 <div class="input-container">
-    <input type="number" id="num4" value="60" min="1">
+    <input type="number" id="num4" value="3500" min="1">
     <button id="update-charts4">更新</button>
     <button id="query-json4">查询</button>
 </div>
 
 <div class="chart-container">
     <div id="line-chart5" style="width: 100%; height: 400px;"></div>
-    <div id="scatter-chart5" style="width: 100%; height: 400px;"></div>
+<!--    <div id="scatter-chart5" style="width: 100%; height: 400px;"></div>-->
+    <div>
+        <canvas id="boxplotChart5" width="600" height="400"></canvas>
+    </div>
 </div>
 
+<p>The relationship between the reputation of owners on each answer and the number of up-votes, or whether the answer was accepted.</p>
+
 <div class="input-container">
-    <input type="number" id="num5" value="60" min="1">
+    <input type="number" id="num5" value="3000" min="1">
     <button id="update-charts5">更新</button>
     <button id="query-json5">查询</button>
 </div>
@@ -121,6 +143,8 @@
     <div id="line-chart6" style="width: 100%; height: 400px;"></div>
     <div id="scatter-chart6" style="width: 100%; height: 400px;"></div>
 </div>
+
+<p>The relationship between the number of comments on each answer and the number of up-votes, or whether the answer was accepted.</p>
 
 <div class="input-container">
     <input type="number" id="num6" value="60" min="1">
@@ -134,18 +158,37 @@
 
 <!-- Tag Query Section -->
 <h3>Topic Frequency Query</h3>
+
+<p>Enter a topic name to get the number of questions related to that topic.</p>
+
 <div class="input-container">
     <input type="text" id="tag-name" placeholder="Enter topic name">
     <button id="query-tag-count">Query Topic Count</button>
+</div>
+
+<p>Enter a number N to get top N tags.</p>
+
+<div class="input-container">
+    <input type="text" id="tag-N" placeholder="Enter a number">
     <button id="query-tagsjson">Query Top N Topics</button>
 </div>
 
+
 <!-- Error Query Section -->
 <h3>Error Frequency Query</h3>
+
+<p>Enter a error/exception name to get the number of questions/answers related to that topic.</p>
+
 <div class="input-container">
     <input type="text" id="error-word" placeholder="Enter error/exception word">
     <button id="query-error-word">Query Error Count</button>
-    <button id="query-error-words">Query Top N Errors</button>
+</div>
+
+<p>Enter a number N to get top N error/exception.</p>
+
+<div class="input-container">
+    <input type="text" id="query-n-error" placeholder="Enter a number">
+    <button id="top-error-words">Query Top N Errors</button>
 </div>
 
 <script>
@@ -300,7 +343,7 @@
                                 } else {
                                     // 显示原始评论和回答数据
                                     var originalData = item.seriesIndex === 2 ? commentCounts[tags.indexOf(item.name)] : answerCounts[tags.indexOf(item.name)];
-                                    tooltipText += item.seriesName + ': ' + originalData;
+                                    tooltipText += item.seriesName + ': ' + originalData + '<br>';
                                 }
                             });
                             return tooltipText;
@@ -583,7 +626,7 @@
                             data: upVoteCounts,
                             smooth: true,
                             itemStyle: {
-                                color: '#FF7F27',
+                                color: '#27d7ff',
                             }
                         }
                     ]
@@ -604,7 +647,7 @@
                     tooltip: {
                         trigger: 'axis',
                         formatter: function (params) {
-                            return 'Elapsed Time: ' + params[0].value[0] + ' days<br/>Is Accepted: ' + (params[0].value[1] ? 'Yes' : 'No');
+                            return 'Elapsed Time: ' + params[0].value[0] + ' days<br/>Is Accepted: ' + (params[0].value[1] ? 'True' : 'False');
                         }
                     },
                     xAxis: {
@@ -620,7 +663,7 @@
                     },
                     yAxis: {
                         type: 'category',
-                        data: ['Not Accepted', 'Accepted'],
+                        data: ['False', 'True'], // 显示 "False" 和 "True"
                         name: 'Answer Accepted',
                     },
                     series: [
@@ -632,7 +675,7 @@
                             }),
                             itemStyle: {
                                 color: function (params) {
-                                    return params.value[1] === 1 ? '#51cc77' : '#d15353'; // 根据接受与否设置颜色
+                                    return params.value[1] === 1 ? '#60e388' : '#e14848'; // 绿色是 True，红色是 False
                                 }
                             }
                         }
@@ -704,54 +747,62 @@
                 };
                 lineChart.setOption(lineOption);
 
-                // 创建散点图的配置（Is Answer Accepted vs Reputation）
-                var scatterChart = echarts.init(document.getElementById('scatter-chart5'));
-                var scatterOption = {
+                var reputationTrue = [];
+                var reputationFalse = [];
+
+                data.forEach(function (item) {
+                    if (item["isAccepted"] === true) {
+                        reputationTrue.push(item["reputation"]);
+                    } else {
+                        reputationFalse.push(item["reputation"]);
+                    }
+                });
+                // 创建箱线图的配置（Reputation 分布 vs Is Accepted）
+                var boxPlotChart = echarts.init(document.getElementById('boxplotChart5'));
+                var boxPlotOption = {
                     title: {
-                        text: 'Is Answer Accepted vs Reputation',
-                        textStyle: {
-                            fontSize: 20,
-                            fontWeight: 'oblique',
-                        },
+                        text: 'Reputation Distribution by Acceptance',
                         left: 'center'
                     },
-                    tooltip: {
-                        trigger: 'item',
-                    },
+                    tooltip: {},
                     xAxis: {
                         type: 'category',
-                        data: reputations,
-                        name: 'Reputation',
-                        axisLabel: {
-                            rotate: 45
-                        }
+                        data: ['Accepted', 'Not Accepted'],
+                        name: 'Is Accepted'
                     },
                     yAxis: {
-                        type: 'category',
-                        data: [0, 1], // 0 = false, 1 = true
-                        name: 'Is Answer Accepted',
-                        axisLabel: {
-                            formatter: function (value) {
-                                return value === 1 ? 'True' : 'False';
-                            }
-                        }
+                        type: 'value',
+                        name: 'Reputation'
                     },
                     series: [
                         {
-                            name: 'Is Answer Accepted',
-                            type: 'scatter',
-                            data: reputations.map(function (reputation, index) {
-                                return [reputation, isAccepted[index]]; // 每个点是 [reputation, isAccepted]
-                            }),
+                            name: 'Reputation',
+                            type: 'boxplot',
+                            data: [
+                                // 'Accepted' BoxPlot
+                                [
+                                    Math.min(...reputationTrue),
+                                    percentile(reputationTrue, 25),
+                                    percentile(reputationTrue, 50),
+                                    percentile(reputationTrue, 75),
+                                    Math.max(...reputationTrue)
+                                ],
+                                // 'Not Accepted' BoxPlot
+                                [
+                                    Math.min(...reputationFalse),
+                                    percentile(reputationFalse, 25),
+                                    percentile(reputationFalse, 50),
+                                    percentile(reputationFalse, 75),
+                                    Math.max(...reputationFalse)
+                                ]
+                            ],
                             itemStyle: {
-                                color: function (params) {
-                                    return params.data[1] === 1 ? '#28D15A' : '#FF7F27'; // 绿色为 true，橙色为 false
-                                }
+                                color: '#FF7F27'
                             }
                         }
                     ]
                 };
-                scatterChart.setOption(scatterOption);
+                boxPlotChart.setOption(boxPlotOption);
             },
             error: function (error) {
                 console.error('Error fetching data', error);
@@ -781,7 +832,7 @@
                 var lineChart = echarts.init(document.getElementById('line-chart6'));
                 var lineOption = {
                     title: {
-                        text: 'Up Vote Count vs Reputation',
+                        text: 'Up Vote Count vs Comment count',
                         textStyle: {
                             fontSize: 20,
                             fontWeight: 'oblique',
@@ -818,10 +869,11 @@
                 lineChart.setOption(lineOption);
 
                 // 创建散点图的配置（Is Answer Accepted vs Reputation）
+                // 确保纵轴显示 0 和 1，即使没有数据为 1
                 var scatterChart = echarts.init(document.getElementById('scatter-chart6'));
                 var scatterOption = {
                     title: {
-                        text: 'Is Answer Accepted vs Reputation',
+                        text: 'Is Answer Accepted vs Comment Count',
                         textStyle: {
                             fontSize: 20,
                             fontWeight: 'oblique',
@@ -829,7 +881,10 @@
                         left: 'center'
                     },
                     tooltip: {
-                        trigger: 'item',
+                        trigger: 'axis',
+                        formatter: function (params) {
+                            return 'Comment count: ' + params[0].value[0] + ' <br/>Is Accepted: ' + (params[0].value[1] ? 'True' : 'False');
+                        }
                     },
                     xAxis: {
                         type: 'category',
@@ -870,6 +925,14 @@
                 console.error('Error fetching data', error);
             }
         });
+    }
+    // 计算分位数的辅助函数
+    function percentile(arr, p) {
+        arr.sort((a, b) => a - b);
+        var index = (p / 100) * (arr.length - 1);
+        var lower = Math.floor(index);
+        var upper = Math.ceil(index);
+        return arr[lower] + (arr[upper] - arr[lower]) * (index - lower);
     }
 
 
@@ -941,7 +1004,11 @@
     });
 
     $('#query-tagsjson').click(function () {
-        var numTags = $('#num-tags1').val();
+        var numTags = $('#tag-N').val();
+        if (isNaN(num) || num <= 0) {
+            alert("Please enter a valid positive number.");
+            return;
+        }
         window.location.href = '/tagsjson?num=' + numTags;
     });
 
@@ -955,8 +1022,12 @@
         }
     });
 
-    $('#query-error-words').click(function () {
-        var num = $('#num-tags1').val();
+    $('#top-error-words').click(function () {
+        var num = $('#query-n-error').val();
+        if (isNaN(num) || num <= 0) {
+            alert("Please enter a valid positive number.");
+            return;
+        }
         window.location.href = '/error-words?num=' + num;
     });
 
@@ -965,8 +1036,8 @@
         updateCharts1(20);
         updateCharts2(20);
         updateCharts3(20);
-        updateCharts4(60);
-        updateCharts5(60);
+        updateCharts4(3500);
+        updateCharts5(3000);
         updateCharts6(60);
     });
 </script>

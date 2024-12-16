@@ -66,7 +66,6 @@ public class AnswerService {
         return statsList;
     }
 
-    // todo sort
     public List<Map<String, Object>> getAnswerQuestionStats() {
         List<Object[]> statsData = answerRepository.findAnswerQuestionStats();
         List<Map<String, Object>> statsList = new ArrayList<>();

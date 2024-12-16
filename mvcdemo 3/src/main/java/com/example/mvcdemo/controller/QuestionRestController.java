@@ -6,9 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 public class QuestionRestController {
@@ -17,7 +18,8 @@ public class QuestionRestController {
 
     @Autowired
     public QuestionRestController(QuestionService questionService) {
-        this.questionService=questionService;}
+        this.questionService = questionService;
+    }
 
     @GetMapping("/topengagement")
     public List<Object[]> getTagsWithEngagementCount(@RequestParam(defaultValue = "20") int n) {
@@ -26,17 +28,19 @@ public class QuestionRestController {
 
     @GetMapping("/error-words")
     public Map<String, Integer> getErrorWordCounts(@RequestParam(defaultValue = "20") int num) {
-        if (cachedSortedErrorWords != null && cachedSortedErrorWords.size() >= num) {
-            return cachedSortedErrorWords.stream()
-                    .limit(num)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        if (cachedSortedErrorWords == null || cachedSortedErrorWords.size() < num) {
+            Map<String, Integer> error = questionService.getErrorWordCounts(num + 20);
+            cachedSortedErrorWords = new ArrayList<>(error.entrySet());
         }
-        cachedSortedErrorWords = questionService.getErrorWordCounts(num).entrySet().stream()
-                .sorted(Map.Entry.comparingByValue())
-                .collect(Collectors.toList());
-        return questionService.getErrorWordCounts(num);
+
+        Map<String, Integer> sortedError = new LinkedHashMap<>();
+        for (int i = 0; i < num; i++) {
+            sortedError.put(cachedSortedErrorWords.get(i).getKey(), cachedSortedErrorWords.get(i).getValue());
+        }
+        return sortedError;
     }
-    // todo
+
     @GetMapping("/error-word")
     public int getSpecificErrorWordCount(@RequestParam String word) {
         return questionService.getSpecificErrorWordCount(word);

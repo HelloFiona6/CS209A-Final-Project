@@ -13,7 +13,7 @@ public class ErrorWordMatcher {
         Matcher matcher = pattern.matcher(text);
 
         while (matcher.find()) {
-            String match = matcher.group(1);
+            String match = matcher.group(1).toLowerCase();;
             errorCounter.put(match, errorCounter.getOrDefault(match, 0) + 1);
         }
 
@@ -36,12 +36,11 @@ public class ErrorWordMatcher {
         Matcher matcher = pattern.matcher(text);
 
         while (matcher.find()) {
-            String match = matcher.group(1);
-            if (match.contains(specificError)) {
+            String match = matcher.group(1).toLowerCase();
+            if (match.contains(specificError.toLowerCase())) {
                 errorCounter.put(match, errorCounter.getOrDefault(match, 0) + 1);
             }
         }
-
-        return errorCounter.getOrDefault(specificError, 0);
+        return errorCounter.getOrDefault(specificError.toLowerCase(), 0);
     }
 }

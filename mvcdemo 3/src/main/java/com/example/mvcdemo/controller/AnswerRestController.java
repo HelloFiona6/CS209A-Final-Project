@@ -35,7 +35,7 @@ public class AnswerRestController {
 //    }
 
     @GetMapping("/answer-reputation")
-    public List<Map<String, Object>> getAnswerReputation(@RequestParam(defaultValue = "60") int num) {
+    public List<Map<String, Object>> getAnswerReputation(@RequestParam(defaultValue = "3000") int num) {
         return answerService.getAnswerReputation().subList(0,num);
     }
 
@@ -45,7 +45,7 @@ public class AnswerRestController {
     }
 
     @GetMapping("/answer-question-stats")
-    public List<Map<String, Object>> getAnswerQuestionStats(@RequestParam(defaultValue = "60")int num) {
+    public List<Map<String, Object>> getAnswerQuestionStats(@RequestParam(defaultValue = "3500")int num) {
         return answerService.getAnswerQuestionStats().subList(0,num);
     }
 }

@@ -54,7 +54,6 @@ public class QuestionService {
         Map<String, Integer> errorCounter = ErrorWordMatcher.countErrorWords(fullText,num);
         errorCounter.forEach((word, count) -> System.out.println(word + ": " + count));
 
-
         return errorCounter;
     }
     public int getSpecificErrorWordCount(String errorWord) {

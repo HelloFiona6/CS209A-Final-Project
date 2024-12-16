@@ -12,6 +12,8 @@ public interface QuestionRepository extends JpaRepository<Questions, Long> {
     @Query("SELECT tag.name,sum(q.comment_count),sum(q.down_vote_count),sum(q.up_vote_count),sum(q.answer_count),SUM(q.comment_count + q.down_vote_count + q.up_vote_count + q.answer_count) " +
             "FROM Questions q " +
             "JOIN q.tags AS tag " +
+            "JOIN Users u " +
+            "ON u.user_id =q.owner_user_id and u.reputation >=900" +
             "GROUP BY tag " +
             "ORDER BY SUM(q.comment_count + q.down_vote_count + q.up_vote_count+q.answer_count) DESC")
     List<Object[]> findTopTenTagsByEngagement(PageRequest pageRequest);
